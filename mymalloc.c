@@ -1,4 +1,3 @@
-
 #define _DEFAULT_SOURCE
 #define _BSD_SOURCE
 #include <malloc.h>
@@ -8,7 +7,13 @@
 #include <string.h>
 #include <assert.h>
 
-#include <debug.h>
+// Include any other headers we need here
+
+// NOTE: You should NOT include <stdlib.h> in your final implementation.
+// malloc.h turns every call to malloc/calloc/free in this file into a call
+// to mymalloc/mycalloc/myfree, so calling them here would recurse forever.
+
+#include <debug.h> // definition of debug_printf
 
 typedef struct block {
     size_t size;
@@ -64,7 +69,8 @@ void *mymalloc(size_t s) {
 
     debug_printf("Malloc %zu bytes\n", s);
 
-    void *p = NULL;
+    void *p = NULL; // TODO: find the first free block that fits, or request a
+                    // new one with sbrk. Determine how you will request memory :)
 
     block_t *block = find_free_block(s);
     if (block == NULL) {
@@ -72,6 +78,8 @@ void *mymalloc(size_t s) {
     }
 
     if (!block) {
+        // We are out of memory
+        // if sbrk fails (returns (void *) -1)
         return NULL;
     }
 
@@ -86,9 +94,11 @@ void *mycalloc(size_t nmemb, size_t s) {
     }
 
     size_t total = nmemb * s;
-    void *p = mymalloc(total);
+    void *p = mymalloc(total); // TODO: get the memory from mymalloc, then set it to 0
 
     if (!p) {
+        // We are out of memory
+        // if we get NULL back from mymalloc
         debug_printf("Calloc %zu bytes\n", total);
         return NULL;
     }
@@ -104,8 +114,9 @@ void myfree(void *ptr) {
     }
 
     block_t *block = (block_t *)ptr - 1;
-    size_t size = block->size;
+    size_t size = block->size; // TODO: the size stored in ptr's block header
 
+    // TODO: mark ptr's block as free
     assert(block->free == 0);
     block->free = 1;
 
